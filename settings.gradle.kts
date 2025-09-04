@@ -19,5 +19,11 @@ dependencyResolutionManagement {
     }
 }
 
+<<<<<<< HEAD
 rootProject.name = "NoteSmarterAI"
 include(":app")
+=======
+rootProject.name = "My Application"
+include(":app")
+ 
+>>>>>>> 9e478916449fed692a4b7eef420a935d095b1c2c

@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+<<<<<<< HEAD
+=======
+    <!-- Internet Permission for API calls -->
+>>>>>>> 9e478916449fed692a4b7eef420a935d095b1c2c
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -25,8 +29,14 @@
             </intent-filter>
         </activity>
 
+<<<<<<< HEAD
         <activity android:name=".HistoryActivity" />
 
     </application>
 
 </manifest>
+=======
+    </application>
+
+</manifest>
+>>>>>>> 9e478916449fed692a4b7eef420a935d095b1c2c

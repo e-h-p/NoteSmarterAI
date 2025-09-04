@@ -34,6 +34,7 @@
             android:text="@string/send_button_text"
             style="@style/Widget.MaterialComponents.Button"/>
 
+<<<<<<< HEAD
         <com.google.android.material.button.MaterialButton
             android:id="@+id/historyButton"
             android:layout_width="wrap_content"
@@ -42,6 +43,8 @@
             android:text="View History"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
+=======
+>>>>>>> 9e478916449fed692a4b7eef420a935d095b1c2c
         <TextView
             android:id="@+id/outputMessage"
             android:layout_width="match_parent"

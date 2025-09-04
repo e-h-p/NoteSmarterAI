@@ -3,5 +3,8 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
+<<<<<<< HEAD
     id("com.google.gms.google-services") version "4.4.3" apply false
+=======
+>>>>>>> 9e478916449fed692a4b7eef420a935d095b1c2c
 }
