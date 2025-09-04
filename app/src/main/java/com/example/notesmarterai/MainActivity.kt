@@ -1,47 +1,124 @@
 package com.example.notesmarterai
 
+import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.notesmarterai.ui.theme.NoteSmarterAITheme
+import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ProgressBar
+import android.widget.TextView
+import com.google.gson.Gson
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.IOException
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
+    private val client = OkHttpClient()
+    private val apiKey = "AIzaSyADee-G900f-UYfIIlVCEEIxwikkzVyzOo" // আপনার কী এখানে বসান
+
+    data class GeminiRequest(val contents: List<Content>, val generationConfig: GenerationConfig)
+    data class Content(val parts: List<Part>)
+    data class Part(val text: String)
+    data class GenerationConfig(val maxOutputTokens: Int)
+
+    data class GeminiResponse(val candidates: List<Candidate>)
+    data class Candidate(val content: Content)
+
+
+    private lateinit var inputMessage: EditText
+    private lateinit var sendButton: Button
+    private lateinit var outputMessage: TextView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var historyButton: Button // ✨ নতুন বাটন ভ্যারিয়েবল
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            NoteSmarterAITheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+        setContentView(R.layout.activity_main)
+
+        inputMessage = findViewById(R.id.inputMessage)
+        sendButton = findViewById(R.id.sendButton)
+        outputMessage = findViewById(R.id.outputMessage)
+        progressBar = findViewById(R.id.progressBar)
+        historyButton = findViewById(R.id.historyButton) // ✨ বাটন ইনিশিয়ালাইজ
+
+        sendButton.setOnClickListener {
+            val userInput = inputMessage.text.toString()
+            if (userInput.isNotBlank()) {
+                progressBar.visibility = View.VISIBLE
+                outputMessage.text = ""
+                callGeminiAPI(userInput) { response ->
+                    runOnUiThread {
+                        progressBar.visibility = View.GONE
+                        outputMessage.text = response
+                    }
                 }
             }
         }
+
+        // ✨ History বাটন ক্লিকের জন্য নতুন কোড
+        historyButton.setOnClickListener {
+            val intent = Intent(this, HistoryActivity::class.java)
+            startActivity(intent)
+        }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+    private fun callGeminiAPI(userText: String, callback: (String) -> Unit) {
+        val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey"
+        val prompt = "Make a short note: Title, Desc, Category, Priority, Reminder from \"$userText\""
+        val requestData = GeminiRequest(
+            contents = listOf(Content(parts = listOf(Part(text = prompt)))),
+            generationConfig = GenerationConfig(maxOutputTokens = 100)
+        )
+        val json = Gson().toJson(requestData)
+        val mediaType = "application/json".toMediaType()
+        val body = json.toRequestBody(mediaType)
+        val request = Request.Builder().url(url).post(body).build()
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    NoteSmarterAITheme {
-        Greeting("Android")
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+                callback("Error: ${e.message}")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use { res ->
+                    val resBody = res.body?.string()
+                    if (!res.isSuccessful) {
+                        callback("Error: ${res.code}\n${resBody}")
+                        return
+                    }
+
+                    if (resBody != null) {
+                        try {
+                            val jsonResponse = Gson().fromJson(resBody, GeminiResponse::class.java)
+                            val result = jsonResponse.candidates.firstOrNull()?.content?.parts?.firstOrNull()?.text
+                            result?.trim()?.let { note ->
+                                saveNoteToFile(note)
+                                callback(note)
+                            } ?: callback("No content found in response")
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            callback("Error parsing JSON: ${e.message}")
+                        }
+                    } else {
+                        callback("No response from server")
+                    }
+                }
+            }
+        })
+    }
+
+    private fun saveNoteToFile(note: String) {
+        val filename = "notes_history.txt"
+        val fileContents = "$note\n--------------------\n"
+        try {
+            openFileOutput(filename, MODE_APPEND).use { outputStream ->
+                outputStream.write(fileContents.toByteArray())
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
     }
 }

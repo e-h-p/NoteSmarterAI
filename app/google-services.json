@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "247949364693",
+    "project_id": "notesmarterai",
+    "storage_bucket": "notesmarterai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:247949364693:android:4913569d939ce53eebc15c",
+        "android_client_info": {
+          "package_name": "com.example.notesmarterai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAr8ibc_cYvD9cPP0kIV4bpX_HsLUGilkk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
